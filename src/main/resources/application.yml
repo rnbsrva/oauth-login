@@ -1,4 +1,14 @@
 spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/oauth-login
+    username: "postgres"
+    password: "0000"
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
   security:
     oauth2:
       client:
@@ -6,5 +16,8 @@ spring:
           github:
             client-id: ${CLIENT_ID}
             client-secret: ${CLIENT_SECRET}
+  liquibase:
+    change-log: "classpath:/db/changelog/db.changelog-master.xml"
 server:
   port: 8080
+

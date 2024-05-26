@@ -1,4 +1,4 @@
-package com.akerke.oath2login;
+package com.akerke.oauth2login;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

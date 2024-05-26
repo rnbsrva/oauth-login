@@ -1,4 +1,4 @@
-package com.akerke.oath2login.config;
+package com.akerke.oauth2login.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +23,5 @@ public class SecurityConfig {
                 .formLogin(withDefaults());
         return http.build();
     }
-
 
 }

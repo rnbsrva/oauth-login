@@ -1,4 +1,4 @@
-package com.akerke.oath2login;
+package com.akerke.oauth2login;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
