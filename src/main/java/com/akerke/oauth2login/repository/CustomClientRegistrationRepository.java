@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.core.AuthenticationMethod;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.stereotype.Component;
@@ -46,8 +47,8 @@ public class CustomClientRegistrationRepository implements ClientRegistrationRep
                 clientRegistrationRequest.
                         clientId(),
                 clientRegistrationRequest.clientSecret(),
-                ClientAuthenticationMethod.CLIENT_SECRET_BASIC,
-                AuthorizationGrantType.AUTHORIZATION_CODE,
+                clientRegistrationRequest.clientAuthenticationMethod(),
+                clientRegistrationRequest.authorizationGrantType(),
                 clientRegistrationRequest.clientName(),
                 clientRegistrationRequest.redirectUri(),
                 clientRegistrationRequest.scopes(),
@@ -67,31 +68,61 @@ public class CustomClientRegistrationRepository implements ClientRegistrationRep
         String sql = "SELECT * FROM oauth2_client_registration WHERE registration_id = ?";
         return jdbcTemplate.queryForObject(sql, new Object[]{registrationId}, new ClientRegistrationRowMapper());
     }
-}
 
-
-class ClientRegistrationRowMapper implements RowMapper<ClientRegistration> {
-    @Override
-    public ClientRegistration mapRow(ResultSet rs, int rowNum) throws SQLException {
-        return ClientRegistration.withRegistrationId(rs.getString("registration_id"))
-                .registrationId(rs.getString("registration_id"))
-                .clientId(rs.getString("client_id"))
-                .clientSecret(rs.getString("client_secret"))
-//                    .clientAuthenticationMethod(rs.getString("client_authentication_method"))
-//                    .authorizationGrantType(rs.getString("authorization_grant_type"))
-                .clientName(rs.getString("client_name"))
-                .redirectUri(rs.getString("redirect_uri"))
+    static class ClientRegistrationRowMapper implements RowMapper<ClientRegistration> {
+        @Override
+        public ClientRegistration mapRow(ResultSet rs, int rowNum) throws SQLException {
+            return ClientRegistration.withRegistrationId(rs.getString("registration_id"))
+                    .registrationId(rs.getString("registration_id"))
+                    .clientId(rs.getString("client_id"))
+                    .clientSecret(rs.getString("client_secret"))
+                    .clientAuthenticationMethod(getClientAuthenticationMethod(rs.getString("client_authentication_method")))
+                    .authorizationGrantType(getAuthorizationGrantType(rs.getString("authorization_grant_type")))
+                    .clientName(rs.getString("client_name"))
+                    .redirectUri(rs.getString("redirect_uri"))
 //                    .scopes(rs.getString("scopes"))
-                .authorizationUri(rs.getString("authorization_uri"))
-                .tokenUri(rs.getString("token_uri"))
-                .jwkSetUri(rs.getString("jwk_set_uri"))
-                .issuerUri(rs.getString("issuer_uri"))
-                .userInfoUri(rs.getString("user_info_uri"))
-//                    .userInfoAuthenticationMethod(rs.getString("user_info_authentication_method"))
-                .userNameAttributeName(rs.getString("user_name_attribute_name"))
+                    .authorizationUri(rs.getString("authorization_uri"))
+                    .tokenUri(rs.getString("token_uri"))
+                    .jwkSetUri(rs.getString("jwk_set_uri"))
+                    .issuerUri(rs.getString("issuer_uri"))
+                    .userInfoUri(rs.getString("user_info_uri"))
+                    .userInfoAuthenticationMethod(getUserInfoAuthenticationMethod(rs.getString("user_info_authentication_method")))
+                    .userNameAttributeName(rs.getString("user_name_attribute_name"))
 //                    .configurationMetadata(rs.getString("configuration_metadata"))
 //                    .providerName(rs.getString("provider_name"))
-                .build();
-    }
+                    .build();
+        }
 
+        ClientAuthenticationMethod getClientAuthenticationMethod(String clientAuthenticationMethod) {
+            return switch (clientAuthenticationMethod) {
+                case "CLIENT_SECRET_BASIC" -> ClientAuthenticationMethod.CLIENT_SECRET_BASIC;
+                case "CLIENT_SECRET_POST" -> ClientAuthenticationMethod.CLIENT_SECRET_POST;
+                case "CLIENT_SECRET_JWT" -> ClientAuthenticationMethod.CLIENT_SECRET_JWT;
+                case "PRIVATE_KEY_JWT" -> ClientAuthenticationMethod.PRIVATE_KEY_JWT;
+                default -> ClientAuthenticationMethod.NONE;
+            };
+        }
+
+        AuthorizationGrantType getAuthorizationGrantType(String authorizationGrantType) {
+            return switch (authorizationGrantType) {
+                case "CLIENT_CREDENTIALS" -> AuthorizationGrantType.CLIENT_CREDENTIALS;
+                case "JWT_BEARER" -> AuthorizationGrantType.JWT_BEARER;
+                case "DEVICE_CODE" -> AuthorizationGrantType.DEVICE_CODE;
+                case "REFRESH_TOKEN" -> AuthorizationGrantType.REFRESH_TOKEN;
+                default -> AuthorizationGrantType.AUTHORIZATION_CODE;
+            };
+        }
+
+        AuthenticationMethod getUserInfoAuthenticationMethod(String userInfoAuthenticationMethod) {
+            return switch (userInfoAuthenticationMethod) {
+                case "HEADER" -> AuthenticationMethod.HEADER;
+                case "QUERY" -> AuthenticationMethod.QUERY;
+                default -> AuthenticationMethod.FORM;
+            };
+        }
+
+
+    }
 }
+
+

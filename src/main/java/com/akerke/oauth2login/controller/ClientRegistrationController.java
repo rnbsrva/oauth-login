@@ -2,20 +2,23 @@ package com.akerke.oauth2login.controller;
 
 import com.akerke.oauth2login.dto.ClientRegistrationRequest;
 import com.akerke.oauth2login.service.ClientRegistrationService;
-import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/client")
 public class ClientRegistrationController {
 
-    private ClientRegistrationService clientRegistrationService;
+    private final ClientRegistrationService clientRegistrationService;
 
-    @PostMapping()
+    public ClientRegistrationController(ClientRegistrationService clientRegistrationService) {
+        this.clientRegistrationService = clientRegistrationService;
+    }
+
+    @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public void registerNewClient(@RequestBody ClientRegistrationRequest request) {
+    public void registerNewClient(@Validated @RequestBody ClientRegistrationRequest request) {
         clientRegistrationService.addClientRegistration(request);
     }
 
@@ -24,7 +27,5 @@ public class ClientRegistrationController {
     public void removeClient(@PathVariable String registrationId) {
         clientRegistrationService.removeClientRegistration(registrationId);
     }
-
-
 
 }
